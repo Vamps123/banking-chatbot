@@ -30,6 +30,10 @@ The repo includes `render.yaml`, which configures:
 - A backend Docker web service using `backend/Dockerfile`
 - A static site for the frontend from `frontend/dist`
 
+### Current Render dashboard
+
+- Render dashboard: `https://dashboard.render.com/web/srv-d862d337uimc73bt85rg/deploys/dep-d862d3b7uimc73bt860g?r=2026-05-19%4008%3A58%3A57%7E2026-05-19%4009%3A01%3A09`
+
 ### Recommended Render setup
 
 1. Sign in to Render.

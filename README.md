@@ -50,7 +50,18 @@ A production-ready Retrieval-Augmented Generation (RAG) banking assistant built 
 
 The backend is deployable using Docker and any container-friendly platform such as Render or Railway. This repo includes `backend/Dockerfile` and `render.yaml` for quick deployment.
 
-> Note: a public live URL is not available from this local workspace, but the deployment configuration is ready to connect to Render or Railway.
+### Render deployment
+This repository is linked to Render for deployment.
+
+- GitHub repo: `https://github.com/Vamps123/banking-chatbot`
+- Render dashboard: `https://dashboard.render.com/web/srv-d862d337uimc73bt85rg/deploys/dep-d862d3b7uimc73bt860g?r=2026-05-19%4008%3A58%3A57%7E2026-05-19%4009%3A01%3A09`
+
+If the Render services are active, the default hostnames may be:
+
+- `https://genai-banking-chatbot-frontend.onrender.com`
+- `https://genai-banking-chatbot-backend.onrender.com`
+
+> Note: this workspace can confirm the repo and deployment configuration, but the public service URL should be read from Render's dashboard once the deployment completes.
 
 ## Architecture Overview
 
