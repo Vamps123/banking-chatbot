@@ -1,0 +1,21 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.env
+*.sqlite3
+*.db
+.env*
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+.env.local
+
+# IDE
+.vscode/
+.DS_Store
+
+# Chroma local persistence
+chromadb/

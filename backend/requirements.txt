@@ -1,0 +1,12 @@
+fastapi==0.111.1
+uvicorn[standard]==0.23.2
+pydantic==2.8.0
+python-multipart==0.0.6
+chroma_db==0.7.3
+sentence-transformers==2.2.2
+transformers==4.34.0
+torch==2.2.2
+pypdf==3.17.0
+python-docx==0.8.12
+httpx==0.26.3
+openai==1.0.0

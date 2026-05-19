@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: genai-banking-chatbot-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    branch: main
+    region: oregon
+  - type: static_site
+    name: genai-banking-chatbot-frontend
+    env: static
+    branch: main
+    buildCommand: "cd frontend && npm install && npm run build"
+    publishPath: frontend/dist
