@@ -2,7 +2,7 @@ services:
   - type: web
     name: genai-banking-chatbot-backend
     env: docker
-    dockerfilePath: backend/Dockerfile
+    dockerfilePath: ./backend/Dockerfile
     branch: main
     region: oregon
   - type: static_site
