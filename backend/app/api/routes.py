@@ -6,7 +6,8 @@ from app.services.rag_service import RagService
 from app.services.document_service import DocumentService
 from app.core.config import settings
 
-from app.api.streaming_routes import router as streaming_router
+from .streaming_routes import router as streaming_router
+
 
 
 router = APIRouter()
