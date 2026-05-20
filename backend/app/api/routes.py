@@ -6,21 +6,33 @@ from app.services.rag_service import RagService
 from app.services.document_service import DocumentService
 from app.core.config import settings
 
+# Streaming router is optional in some build contexts.
+# If it can't be imported, the server still starts and /chat continues to work.
+streaming_router = None
 try:
-    # Prefer relative import (works when backend is treated as a package)
-    from .streaming_routes import router as streaming_router
+    from .streaming_routes import router as _streaming_router
+
+    streaming_router = _streaming_router
 except ModuleNotFoundError:
-    # Fallback to absolute import (some deployment build contexts)
-    from app.api.streaming_routes import router as streaming_router
+    pass
+except Exception:
+    pass
+
+# Absolute import fallback intentionally removed to avoid breaking startup in
+# containers where package discovery differs.
+
 
 
 router = APIRouter()
+
 
 logger = logging.getLogger(__name__)
 
 rag_service = RagService()
 
-router.include_router(streaming_router)
+if streaming_router is not None:
+    router.include_router(streaming_router)
+
 
 
 def validate_upload_file(file: UploadFile) -> None:
