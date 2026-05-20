@@ -7,12 +7,16 @@ class VectorStore:
     def __init__(self):
         persistence_path = Path(settings.vector_store_dir)
         persistence_path.mkdir(parents=True, exist_ok=True)
-        self.client = chromadb.Client(ChromaSettings(chroma_db_impl="duckdb+parquet", persist_directory=str(persistence_path)))
+        # Use the newer Chroma client configuration to avoid the deprecated
+        # legacy config error seen during Render boot.
+        self.client = chromadb.PersistentClient(path=str(persistence_path))
+
         self.collection = self.client.get_or_create_collection("banking_support")
         if not self.collection:
             self.collection = self.client.create_collection("banking_support")
 
-    def add_documents(self, ids: list[str], documents: list[str], embeddings: list[list[float]], metadata: list[dict] | None = None) -> None:
+    def add_documents(self, ids: list[str], documents: list[str], embeddings: list[list[float]], metadata: list[dict] = None) -> None:
+
         self.collection.add(ids=ids, documents=documents, embeddings=embeddings, metadatas=metadata or [])
         self.client.persist()
 
