@@ -6,10 +6,16 @@ from app.services.rag_service import RagService
 from app.services.document_service import DocumentService
 from app.core.config import settings
 
+from app.api.streaming_routes import router as streaming_router
+
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 rag_service = RagService()
+
+router.include_router(streaming_router)
+
 
 def validate_upload_file(file: UploadFile) -> None:
     if file.content_type not in {"text/plain", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}:

@@ -1,8 +1,10 @@
 from pathlib import Path
-from pydantic import BaseSettings
+from pydantic import BaseModel
 
-class Settings(BaseSettings):
-    openai_api_key: str | None = None
+
+class Settings(BaseModel):
+    openai_api_key: 'str' = None
+
     llm_model: str = "gpt2"
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     vector_store_dir: str = str(Path("./chromadb").resolve())

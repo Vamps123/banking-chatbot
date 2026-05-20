@@ -24,13 +24,38 @@ export default function App() {
     setLoading(true);
 
     try {
-      const response = await sendMessage({ session_id: sessionId, message: text });
-      setMessages((prev) => [...prev, { role: "assistant", text: response.response }]);
+      // Streamed response (SSE-like via POST) if supported by backend
+      let assistantText = "";
+      setMessages((prev) => [...prev, { role: "assistant", text: "" }]);
+
+      await sendMessageStream({ session_id: sessionId, message: text }, (_event, data) => {
+        if (data.type === "delta") {
+          assistantText += data.text;
+          setMessages((prev) => {
+            const next = [...prev];
+            // Update the last assistant bubble
+            const lastIdx = next.length - 1;
+            next[lastIdx] = { ...next[lastIdx], text: assistantText };
+            return next;
+          });
+        }
+      });
+
+      // done
     } catch (err) {
-      setMessages((prev) => [...prev, { role: "assistant", text: "Sorry, I could not process that request right now." }]);
+      // fallback to non-stream mode
+      const response = await sendMessage({ session_id: sessionId, message: text });
+      setMessages((prev) => {
+        // replace last assistant placeholder with final response
+        const next = [...prev];
+        const lastIdx = next.length - 1;
+        next[lastIdx] = { role: "assistant", text: response.response };
+        return next;
+      });
     } finally {
       setLoading(false);
     }
+
   };
 
   const handleUpload = async (file) => {
