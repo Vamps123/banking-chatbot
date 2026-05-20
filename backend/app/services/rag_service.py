@@ -13,7 +13,14 @@ class RagService:
     def __init__(self):
         self.embeddings = EmbeddingService()
         self.vector_store = VectorStore()
-        self.llm_service = LlmService()
+        # Defer LLM creation to first request to reduce startup memory usage on small Render instances.
+        self.llm_service = None
+
+    def _get_llm(self) -> LlmService:
+        if self.llm_service is None:
+            self.llm_service = LlmService()
+        return self.llm_service
+
 
     def ingest_chunks(self, chunks: List[str], source: str) -> int:
         ids = [f"{source}-{i}-{uuid4()}" for i in range(len(chunks))]
@@ -35,9 +42,11 @@ class RagService:
             return answer, []
 
         prompt = self._build_prompt(user_query, memory_service.get_context(session_id), contexts)
-        answer = self.llm_service.generate(prompt)
+        llm = self._get_llm()
+        answer = llm.generate(prompt)
         memory_service.add_message(session_id, "assistant", answer)
         return answer, source_chunks
+
 
     def _build_prompt(self, query: str, session_context: str, retrieved_chunks: List[str]) -> str:
         context_section = "\n\n".join(retrieved_chunks).strip()

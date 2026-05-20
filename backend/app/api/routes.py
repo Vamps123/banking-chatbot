@@ -1,5 +1,6 @@
 import logging
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Body
+
 from fastapi.responses import JSONResponse
 from app.api.schemas import ChatRequest, ChatResponse, UploadResponse
 from app.services.rag_service import RagService
@@ -30,6 +31,10 @@ logger = logging.getLogger(__name__)
 
 rag_service = RagService()
 
+# Instantiate a lightweight service at import time; heavy models are lazily loaded
+# by RagService to keep Render boot memory usage low.
+
+
 if streaming_router is not None:
     router.include_router(streaming_router)
 
@@ -40,10 +45,11 @@ def validate_upload_file(file: UploadFile) -> None:
         raise HTTPException(status_code=400, detail="Unsupported document type. Use PDF, TXT, or DOCX.")
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
-    logger.info("Received chat request for session %s", request.session_id)
-    response, source_chunks = rag_service.answer(request.session_id, request.message)
-    return ChatResponse(response=response, source_chunks=source_chunks, session_id=request.session_id)
+async def chat_endpoint(body: ChatRequest = Body(...)):
+    logger.info("Received chat request for session %s", body.session_id)
+    response, source_chunks = rag_service.answer(body.session_id, body.message)
+    return ChatResponse(response=response, source_chunks=source_chunks, session_id=body.session_id)
+
 
 @router.post("/upload", response_model=UploadResponse)
 async def upload_endpoint(file: UploadFile = File(...)):
