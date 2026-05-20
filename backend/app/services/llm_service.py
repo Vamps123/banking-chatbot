@@ -20,15 +20,17 @@ class LlmService:
             logger.info("Using OpenAI for generation")
             self.model_name = settings.llm_model
         else:
-            logger.info("Using local transformer fallback for generation")
-            self.model_name = "gpt2"
-            self.generator = pipeline(
-                "text-generation",
-                model=AutoModelForCausalLM.from_pretrained("gpt2"),
-                tokenizer=AutoTokenizer.from_pretrained("gpt2"),
-                device=-1,
-                return_full_text=False,
+            # Render containers commonly run with tight memory limits.
+            # Loading a local transformer (e.g. gpt2) can trigger large model downloads
+            # and cause OOM during startup.
+            #
+            # We therefore do NOT load the local model unless explicitly enabled.
+            logger.info(
+                "OPENAI_API_KEY not set and OPENAI SDK not available; local transformer fallback is disabled"
             )
+            self.model_name = settings.llm_model
+            self.generator = None
+
 
     def generate(self, prompt: str, max_tokens: int = 250) -> str:
         if self.use_openai:
@@ -40,6 +42,13 @@ class LlmService:
             )
             return completion.choices[0].message.content.strip()
 
+        if self.generator is None:
+            return (
+                "Model is not available on this deployment. "
+                "Set OPENAI_API_KEY to enable generation."
+            )
+
         response = self.generator(prompt, max_new_tokens=max_tokens, do_sample=False)
         text = response[0].get("generated_text", "")
         return text.strip()
+
