@@ -46,45 +46,26 @@ def validate_upload_file(file: UploadFile) -> None:
         raise HTTPException(status_code=400, detail="Unsupported document type. Use PDF, TXT, or DOCX.")
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: Request, session_id: str | None = Query(default=None), message: str | None = Query(default=None)):
+async def chat_endpoint(
+    request: Request,
+    session_id: str | None = Query(default=None),
+    message: str | None = Query(default=None),
+):
+    """Chat endpoint.
 
-    """Chat endpoint with resilient parsing.
-
-    Some proxies/build setups can mangle the JSON body; this endpoint tries multiple
-    strategies before failing.
+    This version primarily uses query params (session_id, message) to avoid JSON-body
+    parsing issues on some proxies.
     """
-    raw_bytes = await request.body()
-    body_json = None
 
-    # Strategy 1: try standard JSON body
-    try:
-        body_json = await request.json()
-    except Exception:
-        body_json = None
-
-    session_id = None
-    message = None
-
-    # Strategy 2: parse manually if JSON decode failed but raw body looks like JSON
-    if body_json is None and raw_bytes:
+    # If query params are missing, try (optionally) to read JSON body.
+    if (session_id is None or message is None) and request.headers.get("content-type", "").startswith("application/json"):
         try:
-            import json
-
-            body_json = json.loads(raw_bytes.decode("utf-8"))
+            body = await request.json()
+            if isinstance(body, dict):
+                session_id = session_id or body.get("session_id")
+                message = message or body.get("message")
         except Exception:
-            body_json = None
-
-    if isinstance(body_json, dict):
-        session_id = body_json.get("session_id")
-        message = body_json.get("message")
-
-    # Strategy 3: fallback to form fields (x-www-form-urlencoded / multipart)
-    if (session_id is None or message is None) and request.headers.get("content-type", "").startswith(
-        "application/x-www-form-urlencoded"
-    ):
-        form = await request.form()
-        session_id = session_id or form.get("session_id")
-        message = message or form.get("message")
+            pass
 
     if not session_id or not isinstance(session_id, str):
         raise HTTPException(status_code=422, detail="Missing/invalid session_id")
@@ -94,6 +75,7 @@ async def chat_endpoint(request: Request, session_id: str | None = Query(default
     logger.info("Received chat request for session %s", session_id)
     response, source_chunks = rag_service.answer(session_id, message)
     return ChatResponse(response=response, source_chunks=source_chunks, session_id=session_id)
+
 
 
 
