@@ -32,9 +32,17 @@ export async function getHealth() {
 }
 
 export async function sendMessage(payload) {
-  const response = await axios.post(`${baseUrl}/chat`, payload);
+  const baseUrl = await getBaseUrl();
+  const { session_id, message } = payload;
+
+  // Use query params to avoid JSON body parsing issues behind certain proxies/CDNs.
+  const response = await axios.post(
+    `${baseUrl}/chat?session_id=${encodeURIComponent(session_id)}&message=${encodeURIComponent(message)}`,
+    payload
+  );
   return response.data;
 }
+
 
 export async function sendMessageStream(payload, onChunk) {
   const baseUrl = await getBaseUrl();

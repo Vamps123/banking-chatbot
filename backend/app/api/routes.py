@@ -1,5 +1,6 @@
 import logging
-from fastapi import APIRouter, File, UploadFile, HTTPException, Body
+from fastapi import APIRouter, File, UploadFile, HTTPException, Body, Request, Query
+
 
 from fastapi.responses import JSONResponse
 from app.api.schemas import ChatRequest, ChatResponse, UploadResponse
@@ -45,7 +46,8 @@ def validate_upload_file(file: UploadFile) -> None:
         raise HTTPException(status_code=400, detail="Unsupported document type. Use PDF, TXT, or DOCX.")
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: Request):
+async def chat_endpoint(request: Request, session_id: str | None = Query(default=None), message: str | None = Query(default=None)):
+
     """Chat endpoint with resilient parsing.
 
     Some proxies/build setups can mangle the JSON body; this endpoint tries multiple
