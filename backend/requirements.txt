@@ -19,3 +19,7 @@ setuptools>=65
 httpx==0.28.1
 
 openai==1.0.0
+
+# Torch/sentence-transformers compatibility on some Render Python images
+numpy==1.26.4
+
